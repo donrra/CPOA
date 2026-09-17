@@ -11,9 +11,11 @@
  * Where it is registered
  * In `.claude/settings.json`, so it runs before every Bash call in the session
  * and restricts only calls whose `agent_type` is `standards-reviewer`. It is
- * deliberately not registered in the agent's own frontmatter: tested with
- * Claude Code 2.1.220, hooks in subagent frontmatter did not run at all, so
- * every command went through unguarded. If the hook cannot start (for example
+ * deliberately not registered in the agent's own frontmatter. Tested with
+ * Claude Code 2.1.220 in headless sessions, a hook in subagent frontmatter ran
+ * only when Claude Code trusted the folder; in an untrusted folder (such as a
+ * fresh clone) it did not run and every command went through unguarded. A
+ * hook in `.claude/settings.json` ran in both cases. If the hook cannot start (for example
  * Node.js is missing), Claude Code treats that as a non-blocking error and the
  * call goes through, so verify the guard with a live block after any change.
  *

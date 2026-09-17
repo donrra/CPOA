@@ -30,7 +30,7 @@ Why this agent exists: the session that writes a change should not be the only o
 Agents do not fill another owner's assessment. Preserve meaningful disagreement.
 
 ## Permissions
-`standards-reviewer` can read files and run read-only git commands, nothing else. The limit is enforced by `.claude/hooks/standards-reviewer-guard.mjs`, registered in `.claude/settings.json`, not by the prompt. The guard needs Node.js. Hooks in an agent's own frontmatter did not run when tested, so do not move the guard there. Respect blocked actions; do not bypass them through another tool, script, MCP or indirect route.
+`standards-reviewer` can read files and run read-only git commands, nothing else. The limit is enforced by `.claude/hooks/standards-reviewer-guard.mjs`, registered in `.claude/settings.json`, not by the prompt. The guard needs Node.js. A hook in an agent's own frontmatter only ran when Claude Code trusted the folder, so do not move the guard there. Respect blocked actions; do not bypass them through another tool, script, MCP or indirect route.
 
 ## Writing rules
 - English, short plain sentences.
