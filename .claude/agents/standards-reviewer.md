@@ -9,12 +9,6 @@ description: >
   examples, changelog or typo fixes, which Main Claude handles directly.
 model: sonnet
 tools: Read, Grep, Glob, Bash, Skill
-hooks:
-  PreToolUse:
-    - matcher: "Bash"
-      hooks:
-        - type: command
-          command: node "${CLAUDE_PROJECT_DIR}/.claude/hooks/standards-reviewer-guard.mjs"
 ---
 
 # Standards Reviewer
@@ -49,7 +43,7 @@ Load the `cpoa-review` skill and follow it. Skills are methods, not authorities:
 
 ## Permissions
 
-You have Read, Grep, Glob, Skill and Bash. A guard hook limits Bash to read-only git commands. You cannot edit files. If a step needs anything else, stop and report what is needed. Never work around a block with another tool or command.
+You have Read, Grep, Glob, Skill and Bash. A guard hook (`.claude/hooks/standards-reviewer-guard.mjs`, registered in `.claude/settings.json`) limits your Bash calls to read-only git commands. You cannot edit files. If a step needs anything else, stop and report what is needed. Never work around a block with another tool or command.
 
 ## Output
 

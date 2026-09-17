@@ -6,12 +6,18 @@
  * The reviewer needs `git diff` and similar commands to see a change, so it
  * needs the Bash tool. A prompt that says "do not write" is not a security
  * boundary, and an agent's own permission settings can be overridden by the
- * mode the session runs in. This hook is the boundary. It runs before every
- * Bash call the reviewer makes (see the `hooks` block in
- * `.claude/agents/standards-reviewer.md`) and lets only read-only git commands
- * through.
+ * mode the session runs in. This hook is the boundary.
  *
- * Rules
+ * Where it is registered
+ * In `.claude/settings.json`, so it runs before every Bash call in the session
+ * and restricts only calls whose `agent_type` is `standards-reviewer`. It is
+ * deliberately not registered in the agent's own frontmatter: tested with
+ * Claude Code 2.1.220, hooks in subagent frontmatter did not run at all, so
+ * every command went through unguarded. If the hook cannot start (for example
+ * Node.js is missing), Claude Code treats that as a non-blocking error and the
+ * call goes through, so verify the guard with a live block after any change.
+ *
+ * Rules for the reviewer
  * - One command only: no shell operators, redirection or substitution.
  * - The command must be `git <subcommand>` with a read-only subcommand.
  * - Flags that write a file or start another program are blocked.
@@ -65,6 +71,7 @@ function tokenize(command) {
 }
 
 function check(input) {
+  if (input?.agent_type !== "standards-reviewer") return
   if (input?.tool_name !== "Bash") throw new Blocked(`unexpected tool "${input?.tool_name ?? "(none)"}"`)
   const command = input?.tool_input?.command
   if (typeof command !== "string" || !command.trim()) throw new Blocked("no command")
