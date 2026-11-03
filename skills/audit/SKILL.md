@@ -8,6 +8,9 @@ allowed-tools: Read, Grep, Glob, Bash(node *measure.mjs*), Bash(git status*)
 
 # CPOA audit
 
+## Scope
+CPOA checks the Claude Code setup: instruction files, memory, agents, skills, settings, permissions, hooks and MCP configuration. It reports security risks found there: secrets in permission rules, settings files or MCP configuration, setup files tracked by Git that should not be, broad permissions, agents without tool limits and missing deny rules. It is not a security scanner. It does not check application code, does not scan Git history, and does not look into other systems such as hosting, databases or CI.
+
 ## Purpose
 Show the user, in five minutes, what their Claude Code setup costs them every session, where it is unsafe or confusing, and the smallest change that would fix it. The audit is designed to change nothing.
 
@@ -33,13 +36,14 @@ The user runs `/cpoa:audit`. Useful before changing a Claude Code setup, when se
 4. **Split by owner of the fix.** Machine-wide findings (files in `~/.claude/`, a parent folder's `CLAUDE.md`, user settings) affect every project and are fixed once. Project findings live in this repository. Report them separately.
 5. **Label each finding** with who acts:
    - **Claude fixes:** a file change Claude can make after a yes.
-   - **You fix:** an action outside Claude Code, such as rotating a key in a provider's dashboard or changing an account setting. Claude guides it step by step.
+   - **You fix:** an action outside the Claude Code setup, such as rotating a key in a provider's dashboard or changing an account setting. Claude cannot see those systems, so it gives a short checklist, not a guided tour.
    - **Your choice:** a trade-off with no single right answer. Give the trade-off in one sentence.
+   A finding may carry two labels when Claude does part and the user does part, for example `[Claude fixes + You fix]`.
 6. **Rank by gain.** Order by what the user gains: risk removed first, then tokens saved every session, then confusion removed. Put a number on each where you can.
 7. **Pick the first step.** Usually the top finding. Estimate how long it takes.
 
 ## Output
-Write for someone who is not a developer, in the language the user writes in. Use one language throughout, and translate the headings and the three labels too. Explain a technical word the first time you use it. The report must fit on one screen: about 35 lines.
+Write for someone who is not a developer, in the language the user writes in. Use one language throughout, and translate the headings and the three labels too. Explain a technical word the first time you use it; explain "token" in the first line of the report. The report must fit on one screen: about 35 lines.
 
 ```text
 CPOA AUDIT: <project name>
@@ -65,7 +69,7 @@ Token counts are estimates (characters / 4).
 
 Show at most three findings per section. Then end with a single question, not a command, for example:
 
-> The most important step is <first step>. It takes about <time>, and <I make the change | I guide you through it>. Shall we start?
+> The most important step is <first step>. It takes about <time>, and <I make the change | you get a short checklist>. Shall we start?
 
 Keep the details (all findings, current → proposed, what you would not add, what the script does not measure) ready for when the user asks. Always say in one line that token counts are estimates.
 

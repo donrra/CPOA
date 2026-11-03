@@ -45,12 +45,12 @@ It takes a few minutes and only reads your files. You get a one-screen report. A
 ```text
 CPOA AUDIT: my-app
 
-Every session starts with ~21,900 tokens of setup. After fixes: ~13,200 (40% less).
+Every session starts with ~21,900 tokens of setup. (A token is about 4 characters of text.) After fixes: ~13,200 (40% less).
 Most of it is CLAUDE.md, which holds procedures only some tasks need.
 
 THIS PROJECT
-1. A production key is saved in a file tracked by Git        [You fix]
-   Anyone with repository access can call your scheduled jobs.
+1. A production key is saved in a settings file tracked by Git  [Claude fixes + You fix]
+   Claude untracks the file; you replace the key in your host's dashboard.
 2. A 1,300-token sprint procedure sits in CLAUDE.md          [Claude fixes]
    Move it to a workflow file that loads when needed.
 
@@ -63,17 +63,21 @@ Your read-only agents are blocked by a guard, not just asked to behave.
 
 Token counts are estimates (characters / 4).
 
-The most important step is replacing the leaked key. It takes about
-10 minutes and I guide you through it. Shall we start?
+The most important step is the leaked key. I untrack the file, and you
+get a short checklist for replacing the key. Shall we start?
 ```
 
-**4. Answer the question.** Say yes, and CPOA takes you through the fixes in the same conversation, one approved step at a time. Before each change you see which files change and a preview, and nothing is written until you say yes to that step. Steps marked **Claude fixes** are file changes Claude makes this way. Steps marked **You fix** happen outside Claude Code, such as replacing a key in a dashboard, and you get step-by-step guidance. Steps marked **Your choice** are trade-offs. At the end you see the before and after numbers.
+**4. Answer the question.** Say yes, and CPOA takes you through the fixes in the same conversation, one approved step at a time. Before each change you see which files change and a preview, and nothing is written until you say yes to that step. Steps marked **Claude fixes** are file changes Claude makes this way. Steps marked **You fix** happen outside your Claude setup, such as replacing a key in a dashboard. Claude cannot see those systems, so you get a short checklist instead. Steps marked **Your choice** are trade-offs. At the end you see the before and after numbers.
 
 Want to come back later? Run `/cpoa:setup` in a new conversation.
 
+**Updating.** Run `claude plugin marketplace update cpoa` and `claude plugin update cpoa@cpoa` in a terminal, then restart Claude Code. `/clear` is not enough; `/reload-plugins` also works.
+
 Without Node.js the audit still runs, but without measured numbers.
 
-How safe is it? The audit is instructed to only read, and it is pre-approved only for reading. It does not switch off your own permission settings, so if you run Claude Code in a mode that allows edits without asking, the read-only promise rests on the instruction. Changes only start after you say yes to a specific step, and they still go through your normal permission prompts. Claude never reads or prints your secrets; it finds them by file and pattern.
+How safe is it? The audit is instructed to only read, and it is pre-approved only for reading. It does not switch off your own permission settings, so if you run Claude Code in a mode that allows edits without asking, the read-only promise rests on the instruction. Changes only start after you say yes to a specific step, and they still go through your normal permission prompts. Claude never shows your secrets and never opens `.env` files; it finds keys in your setup files by pattern and reports only file names.
+
+What CPOA is not: a security scanner. It finds risks in your Claude setup: keys in permission rules, settings or MCP configuration, setup files tracked by Git, broad permissions and agents without tool limits. It does not check your application code, scan your Git history, or look into your hosting, database or CI, and it does not manage keys in other systems.
 
 ## The idea behind it
 
