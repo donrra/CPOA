@@ -1,10 +1,19 @@
 {
   "name": "cpoa",
-  "version": "2.0.0-rc.1",
   "description": "Audit and right-size your Claude Code setup: see what loads into every session, fix unsafe permissions and confused agents, and keep only the architecture you need.",
-  "author": { "name": "Raheel Raja" },
+  "author": {
+    "name": "Raheel Raja"
+  },
   "homepage": "https://github.com/donrra/CPOA",
   "repository": "https://github.com/donrra/CPOA",
   "license": "MIT",
-  "keywords": ["claude-code", "agents", "skills", "context", "tokens", "permissions", "audit"]
+  "keywords": [
+    "claude-code",
+    "agents",
+    "skills",
+    "context",
+    "tokens",
+    "permissions",
+    "audit"
+  ]
 }
