@@ -9,7 +9,9 @@
 - Measuring script `skills/audit/scripts/measure.mjs` (Node.js, no dependencies).
 
 ### Changed
-- README leads with the problem CPOA solves and the plugin install.
+- README leads with the problem CPOA solves and the plugin install, including where to type the commands, the install scope and `/reload-plugins`.
+- The audit report fits on one screen, separates project findings from machine-wide findings, labels each finding Claude fixes, You fix or Your choice, and ends with a question that continues straight into setup.
+- Setup guides the user through fixes outside Claude Code, such as rotating a key, and ends with a before and after summary.
 - The repository constitution now notes that the repository is a plugin and holds one script, and the standards reviewer covers `skills/` and `.claude-plugin/`.
 
 ## [2.0.0-rc.1] — 2026-09-17

@@ -30,42 +30,49 @@ The user runs `/cpoa:audit`. Useful before changing a Claude Code setup, when se
    - *Least Privilege:* agents with no `tools` field (they inherit everything), reviewer or advisory agents that can write, broad or one-off allow rules piling up in settings, secrets in tracked files, limits written only as prompt text with no hook or permission enforcing them.
    - *Evidence:* rules that let agents recommend without looking at available data.
    - *Staleness and conflict:* instructions that contradict each other across layers, references to files, tools or people that no longer exist.
-4. **Rank by impact.** Order findings by what the user gains: tokens saved every session, risk removed, confusion removed. Put a number on each where you can.
-5. **Propose the smallest fix.** Current State → Proposed State. Say what you would deliberately not add.
+4. **Split by owner of the fix.** Machine-wide findings (files in `~/.claude/`, a parent folder's `CLAUDE.md`, user settings) affect every project and are fixed once. Project findings live in this repository. Report them separately.
+5. **Label each finding** with who acts:
+   - **Claude fixes:** a file change Claude can make after a yes.
+   - **You fix:** an action outside Claude Code, such as rotating a key in a provider's dashboard or changing an account setting. Claude guides it step by step.
+   - **Your choice:** a trade-off with no single right answer. Give the trade-off in one sentence.
+6. **Rank by gain.** Order by what the user gains: risk removed first, then tokens saved every session, then confusion removed. Put a number on each where you can.
+7. **Pick the first step.** Usually the top finding. Estimate how long it takes.
 
 ## Output
-Write for someone who is not a developer. Explain a technical word the first time you use it. Keep it to one screen where possible.
+Write for someone who is not a developer, in the language the user writes in. Use one language throughout, and translate the headings and the three labels too. Explain a technical word the first time you use it. The report must fit on one screen: about 35 lines.
 
 ```text
 CPOA AUDIT: <project name>
 
-EVERY SESSION STARTS WITH ~<total> TOKENS OF SETUP
-  <biggest source>   ~<n>
-  <next source>      ~<n>
-  ...
-  Achievable after fixes: ~<n> (<percent> less)
+Every session starts with ~<total> tokens of setup. After fixes: ~<n> (<percent> less).
+<one line naming the biggest source>
 
-TOP FINDINGS (biggest gain first)
-1. <plain-language problem>
-   Evidence: <file:line or measured number>
-   Gain: <tokens per session, risk removed or confusion removed>
-   Fix: <one sentence>
+THIS PROJECT
+1. <plain-language problem>  [Claude fixes | You fix | Your choice]
+   <evidence: file or measured number> - <gain>
 2. ...
 
+YOUR MACHINE (affects all your projects, fixed once)
+1. <plain-language problem>  [label]
+   <evidence: file or measured number> - <gain>
+
 WORKING WELL
-- <what already follows CPOA, so it is kept>
+<one or two lines, what is kept>
 
-CURRENT → PROPOSED
-  <short before/after of the setup: CLAUDE.md, agents, skills, permissions>
-
-NOT RECOMMENDED
-- <what you considered and would not add, and why>
-
-NEXT
-Run /cpoa:setup to apply these one step at a time. Nothing has been changed.
+Token counts are estimates (characters / 4).
+<n> smaller findings and the full current → proposed plan: ask "show details".
 ```
 
-Limit to the five most valuable findings. Mention the rest in one line. Say which numbers are estimates (token counts are characters divided by 4) and what the script does not measure.
+Show at most three findings per section. Then end with a single question, not a command, for example:
+
+> The most important step is <first step>. It takes about <time>, and <I make the change | I guide you through it>. Shall we start?
+
+Keep the details (all findings, current → proposed, what you would not add, what the script does not measure) ready for when the user asks. Always say in one line that token counts are estimates.
+
+## After the report
+- **Yes:** continue in this conversation with `${CLAUDE_PLUGIN_ROOT}/skills/setup/SKILL.md`, starting from its Baseline step and using this audit. Do not audit again. This yes only starts setup. The first step still shows its files and preview and waits for its own yes.
+- **Show details:** give the full findings, current → proposed and not recommended, then ask the same question again.
+- **No or later:** say that `/cpoa:setup` in a later conversation runs the audit again first, and stop.
 
 ## Source of truth
 1. The project's own files and the measured numbers.
@@ -73,8 +80,8 @@ Limit to the five most valuable findings. Mention the rest in one line. Say whic
 3. This skill.
 
 ## Boundaries
-- Read-only by instruction. The skill pre-approves only reads, `git status` and the measuring script, so anything else would trigger the user's normal permission prompt. It does not technically block writes in permissive modes, so this rule must be followed, not relied on.
+- The audit itself is read-only by instruction. The skill pre-approves only reads, `git status` and the measuring script, so anything else would trigger the user's normal permission prompt. It does not technically block writes in permissive modes, so this rule must be followed, not relied on.
 - If Node.js is missing and the script cannot run, say so, tell the user to install Node.js, and offer a manual audit without measured numbers. Do not invent numbers.
-- Read-only. Do not edit, create or delete files, and do not change settings, even if a fix is trivial.
+- Until the user says yes, do not edit, create or delete files or change settings, even if a fix is trivial.
 - Do not open secret files such as `.env`. Report that a secret appears to be in a tracked file without printing it.
-- Do not decide for the user. Recommend; the user approves changes through `/cpoa:setup`.
+- Do not decide for the user. Recommend; every change needs the user's yes through the setup method.
