@@ -70,7 +70,7 @@ function addInstructionFile(file, layer, list, seen, depth = 0) {
   const text = read(file);
   if (text === null) return;
   seen.add(key);
-  list.push({ layer: depth ? `${layer} (import)` : layer, file: rel(file), lines: text.split(/\r?\n/).length, tokens: tokens(text) });
+  list.push({ layer: depth ? `${layer} (import)` : layer, file: rel(file), abs: path.resolve(file), lines: text.split(/\r?\n/).length, tokens: tokens(text) });
   if (depth >= 5) return;
   for (const imp of importsOf(text, path.dirname(file))) addInstructionFile(imp, layer, list, seen, depth + 1);
 }
@@ -92,6 +92,67 @@ function instructionFiles() {
     }
   }
   return list;
+}
+
+// ---------- files an instruction tells Claude to read at session start ----------
+// Not loaded by Claude Code itself, but read because an always-loaded file says so.
+const SESSION_RE = /(start of (every|each|the|a) (new )?session|at session[- ]start|session start\b|ved session(ens)?[- ]?start|sessionsstart|i starten af (hver|en) session|begin(ning)? of (every|each) session)/i;
+const READ_RE = /\b(read|reads|reading|review|læs|læse|gennemlæs)\b/i;
+const NEGATION_RE = /\b(do not|don't|never|no need to|not|ikke|aldrig)\b/i;
+const PRONOUN_RE = /\b(it|this file|den|det|denne fil)\b/i;
+const NOT_A_READ_RE = /(costs? context|auto-?listed|injected|auto-?imported|loads? automatically)/i;
+const FILE_REF_RE = /`([^`\s]+\.(?:md|mdx|txt))`|\]\(([^)\s]+\.(?:md|mdx|txt))\)/gi;
+
+const fileRefs = line => [...line.matchAll(FILE_REF_RE)].map(m => m[1] || m[2]);
+
+function instructedReads(instr) {
+  const imported = new Set(instr.map(f => f.abs.toLowerCase()));
+  const found = new Map();
+  for (const f of instr) {
+    const lines = (read(f.abs) || '').split(/\r?\n/);
+    let inFence = false;
+    lines.forEach((line, i) => {
+      if (/^\s*(```|~~~)/.test(line)) { inFence = !inFence; return; }
+      if (inFence) return;
+      // Judge each sentence on its own: "Loading it costs context. Read it at session start."
+      // A sentence counts only if it names a session start, uses a reading verb and is not negated.
+      const sentences = line.split(/(?<=[.!?])\s+/).filter(s =>
+        SESSION_RE.test(s) && READ_RE.test(s) && !NEGATION_RE.test(s) && !NOT_A_READ_RE.test(s));
+      for (const sentence of sentences) {
+        let refs = fileRefs(sentence);
+        let match = 'same line';
+        // "At the start of every session, read:" followed by a list of files
+        if (!refs.length && /:\s*$/.test(sentence)) {
+          let j = i + 1;
+          if (j < lines.length && !lines[j].trim()) j++;
+          for (; j < lines.length && lines[j].trim(); j++) {
+            if (/^\s*([-*]|\d+[.)])\s/.test(lines[j])) refs.push(...fileRefs(lines[j]).slice(0, 1));
+          }
+          match = 'list below';
+        }
+        // "Read it at the start of every session": the file is named earlier in the same paragraph,
+        // or in the heading of the section. Lower confidence, so it is labelled.
+        if (!refs.length && PRONOUN_RE.test(sentence)) {
+          for (let j = i - 1; j >= Math.max(0, i - 3) && lines[j].trim() && !refs.length; j--) refs = fileRefs(lines[j]).slice(-1);
+          match = 'same paragraph';
+          for (let j = i - 1; j >= 0 && !refs.length; j--) {
+            if (/^#{1,6}\s/.test(lines[j])) { refs = fileRefs(lines[j]).slice(0, 1); match = 'section heading'; break; }
+          }
+        }
+        addRefs(refs, match);
+      }
+      function addRefs(refs, match) {
+        for (const ref of refs) {
+          const candidates = [path.resolve(projectDir, ref), path.resolve(path.dirname(f.abs), ref)];
+          const hit = candidates.find(c => { try { return fs.statSync(c).isFile(); } catch { return false; } });
+          if (!hit || imported.has(hit.toLowerCase()) || found.has(hit.toLowerCase())) continue;
+          const text = read(hit) || '';
+          found.set(hit.toLowerCase(), { file: rel(hit), lines: text.split(/\r?\n/).length, tokens: tokens(text), instructedBy: `${f.file}:${i + 1}`, match });
+        }
+      }
+    });
+  }
+  return [...found.values()];
 }
 
 // ---------- auto memory ----------
@@ -232,6 +293,7 @@ function nestedClaudeFiles() {
 // ---------- report ----------
 const instr = instructionFiles();
 const memory = memoryIndex();
+const sessionReads = instructedReads(instr);
 const skillList = [...skills(path.join(projectDir, '.claude'), 'project'), ...skills(userDir, 'user')];
 const agentList = [...agents(path.join(projectDir, '.claude'), 'project'), ...agents(userDir, 'user')];
 const commandList = [...commands(path.join(projectDir, '.claude'), 'project'), ...commands(userDir, 'user')];
@@ -245,11 +307,13 @@ const always = {
   commandDescriptions: sum(commandList, 'descriptionTokens'),
 };
 always.total = Object.values(always).reduce((a, b) => a + b, 0);
+// Instructed reads are an upper bound (whole files), so they stay outside the total.
+const readByInstructionUpTo = sum(sessionReads, 'tokens');
 
 const report = {
   projectDir, measuredAt: new Date().toISOString(), tokenMethod: 'estimate: characters / 4',
   alwaysLoadedTokens: always,
-  instructionFiles: instr, memory, skills: skillList, agents: agentList, commands: commandList,
+  readByInstructionUpTo, instructionFiles: instr.map(({ abs, ...f }) => f), readByInstruction: sessionReads, memory, skills: skillList, agents: agentList, commands: commandList,
   settings: settings(), mcpServers: mcpServers(), onDemandClaudeFiles: nestedClaudeFiles(),
   notMeasured: ['installed plugins', 'MCP tool definitions', 'Claude Code system prompt', 'rules in .claude/rules/'],
 };
@@ -267,8 +331,16 @@ if (asJson) {
   line('Agent descriptions', always.agentDescriptions);
   line('Command descriptions', always.commandDescriptions);
   line('TOTAL', always.total);
+  if (readByInstructionUpTo) {
+    line('Plus read by instruction', readByInstructionUpTo);
+    console.log('    (upper bound: the whole files, see below)');
+  }
   console.log('\nInstruction files');
   for (const f of instr) console.log(`  ${pad(f.layer, 24)} ${pad(f.lines + ' lines', 11)} ~${String(f.tokens).padStart(5)}  ${f.file}`);
+  if (sessionReads.length) {
+    console.log('\nRead at session start because an instruction says so (whole file, estimate)');
+    for (const s of sessionReads) console.log(`  ${pad(s.lines + ' lines', 11)} ~${String(s.tokens).padStart(6)}  ${s.file}  (instructed by ${s.instructedBy}, file named in ${s.match})`);
+  }
   if (memory) console.log(`\nMemory index: ${memory.file} (${memory.lines} lines, ${memory.notes} notes)`);
   console.log(`\nSkills: ${skillList.length} (${skillList.filter(s => s.userOnly).length} user-invoked only)`);
   for (const s of skillList) console.log(`  ${pad(s.scope, 8)} ${pad(s.name, 30)} desc ~${String(s.descriptionTokens).padStart(4)}  body ~${s.bodyTokens}`);

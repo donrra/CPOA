@@ -14,6 +14,8 @@
 - Scope is explicit: CPOA finds security risks in the Claude setup and fixes only inside it. For keys and accounts in other systems it gives a short checklist (check the key is still active, match by visible characters, replace before removing) instead of a guided tour.
 - Setup checks that affected connections work before it touches secrets, permissions or MCP configuration, and ends with a before and after summary.
 - README explains how to update the plugin.
+- The measuring script finds files that an always-loaded instruction tells Claude to read at session start, such as "read `docs/BACKLOG.md` at the start of every session", and reports them separately as an upper bound.
+- The audit report says what a token is in its first line and ends with its question, with nothing added before or after.
 - The repository constitution now notes that the repository is a plugin and holds one script, and the standards reviewer covers `skills/` and `.claude-plugin/`.
 
 ## [2.0.0-rc.1] — 2026-09-17
