@@ -2,6 +2,22 @@
 
 You do not need to understand agents, skills, hooks or MCP before using CPOA.
 
+## Fastest: the plugin
+
+Start Claude Code in a terminal inside your project (`claude`), then type these after the `>` prompt. They do not work in a plain terminal or in the VS Code chat panel.
+
+```text
+/plugin marketplace add donrra/CPOA
+/plugin install cpoa@cpoa
+/reload-plugins
+```
+
+If asked where to install, choose **Install for you (user scope)**.
+
+Then run `/cpoa:audit` for a read-only report. It ends with a question about the most important fix; say yes to be guided through the fixes one approved step at a time. `/cpoa:setup` does the same in a later conversation. Use `/cpoa:setup new` for a project with no Claude setup yet.
+
+Without the plugin, the prompts below give a similar assessment, but without measured numbers or step-by-step before and after checks.
+
 ## Existing project
 
 Place the CPOA standard where Claude can read it, then start Claude Code in the project and use this instruction:
