@@ -3,11 +3,11 @@
 This repository holds CPOA, a public operating standard for Claude Code projects. CPOA is also applied to this repository itself.
 
 ## Project
-Documentation only: no application code and no build step. Public under MIT. Readers are Claude Code users who adopt CPOA, so every file must make sense without private context.
+Mostly documentation. The only code is the read-only measuring script in `skills/audit/scripts/`, which needs Node.js and no build step. The repository is also a Claude Code plugin: `.claude-plugin/` holds the manifests and `skills/` holds the `/cpoa:audit` and `/cpoa:setup` commands. Public under MIT. Readers are Claude Code users who adopt CPOA, so every file must make sense without private context.
 
 ## Sources of truth
 1. `standard/CPOA.md` - the authoritative standard.
-2. `onboarding/`, `templates/`, `patterns/`, `QUICKSTART.md` - what users follow or copy. Must agree with 1.
+2. `onboarding/`, `templates/`, `patterns/`, `skills/`, `QUICKSTART.md` - what users follow, run or copy. Must agree with 1.
 3. `README.md`, `examples/`, `tests/` - explain and illustrate 1 and 2.
 
 When a lower source conflicts with a higher one, fix the lower one or surface the conflict.
@@ -16,7 +16,7 @@ When a lower source conflicts with a higher one, fix the lower one or surface th
 Main Claude works directly by default: README, examples, changelog, typos and formatting.
 
 Specialists:
-- `standards-reviewer` (read-only) - owns: *Is this change consistent with CPOA's own principles, without adding unnecessary context, delegation, permissions or governance?* Delegate to it before committing any change to `standard/`, `onboarding/`, `templates/`, `patterns/` or `QUICKSTART.md`.
+- `standards-reviewer` (read-only) - owns: *Is this change consistent with CPOA's own principles, without adding unnecessary context, delegation, permissions or governance?* Delegate to it before committing any change to `standard/`, `onboarding/`, `templates/`, `patterns/`, `skills/`, `.claude-plugin/` or `QUICKSTART.md`.
 
 Why this agent exists: the session that writes a change should not be the only one that approves it. A separate context gives an independent reading, and read-only access keeps the review from turning into editing. It is the first agent added by applying CPOA to itself. Remove it if it stops catching real problems.
 

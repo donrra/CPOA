@@ -2,8 +2,8 @@
 name: standards-reviewer
 description: >
   Read-only reviewer for changes to the CPOA framework itself. Use before
-  committing any change to standard/, onboarding/, templates/, patterns/ or
-  QUICKSTART.md, or when asked whether a proposed CPOA change is consistent
+  committing any change to standard/, onboarding/, templates/, patterns/,
+  skills/, .claude-plugin/ or QUICKSTART.md, or when asked whether a proposed CPOA change is consistent
   with CPOA's own principles. Returns findings with evidence. Does not edit
   files, rewrite text or decide whether a change ships. Not for README,
   examples, changelog or typo fixes, which Main Claude handles directly.

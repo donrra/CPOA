@@ -3,8 +3,8 @@ name: cpoa-review
 description: >
   Method for reviewing a change to the CPOA framework against CPOA's own five
   principles and its internal consistency. Use when reviewing a diff, commit
-  range or proposal that touches standard/, onboarding/, templates/, patterns/
-  or QUICKSTART.md in the CPOA repository.
+  range or proposal that touches standard/, onboarding/, templates/, patterns/,
+  skills/, .claude-plugin/ or QUICKSTART.md in the CPOA repository.
 ---
 
 # CPOA review

@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- Claude Code plugin. Install with `/plugin marketplace add donrra/CPOA` and `/plugin install cpoa@cpoa`.
+- `/cpoa:audit`: read-only audit that measures what loads into every session and ranks findings by gain.
+- `/cpoa:setup`: applies an audit one approved step at a time and shows before and after numbers.
+- Measuring script `skills/audit/scripts/measure.mjs` (Node.js, no dependencies).
+
+### Changed
+- README leads with the problem CPOA solves and the plugin install.
+- The repository constitution now notes that the repository is a plugin and holds one script, and the standards reviewer covers `skills/` and `.claude-plugin/`.
+
 ## [2.0.0-rc.1] — 2026-09-17
 
 Initial public release candidate of Claude Project Operating Architecture (CPOA).

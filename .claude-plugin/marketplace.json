@@ -1,0 +1,16 @@
+{
+  "name": "cpoa",
+  "owner": {
+    "name": "Raheel Raja"
+  },
+  "plugins": [
+    {
+      "name": "cpoa",
+      "source": "./",
+      "description": "Audit and right-size your Claude Code setup with the CPOA standard."
+    }
+  ],
+  "metadata": {
+    "description": "CPOA: a small operating standard and audit for Claude Code projects."
+  }
+}
