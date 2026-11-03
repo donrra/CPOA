@@ -25,9 +25,10 @@ The user runs `/cpoa:audit`. Useful before changing a Claude Code setup, when se
 1. **Measure.** Run:
    `node "${CLAUDE_PLUGIN_ROOT}/skills/audit/scripts/measure.mjs" "<project folder>"`
    Add `--json` if you need the full detail. These numbers are the evidence. Do not estimate what the script measured.
+   The script also lists files that an always-loaded instruction tells Claude to read at session start ("Plus read by instruction"). Its number is an upper bound for the whole files. Read the instruction itself: if it asks for only part of a file, say so and give a rough share. Report these reads separately from the total, as "plus up to ~<n> read because CLAUDE.md asks for it". A large file read every session is often the biggest finding.
 2. **Read the high-value files.** Read the project `CLAUDE.md` and its imports, every agent file and the memory index. For skills, read the frontmatter and skim the body only when a finding depends on it. Do not read the whole codebase.
 3. **Check against the principles.** Look for:
-   - *Minimum Context:* always-loaded text that only some tasks need. Typical cases: long procedures, status logs, changelogs, backlog content or domain detail in `CLAUDE.md`; a memory index with long entries; many skills that could be user-invoked only.
+   - *Minimum Context:* always-loaded text that only some tasks need. Typical cases: long procedures, status logs, changelogs, backlog content or domain detail in `CLAUDE.md`; instructions to read a long backlog or log at every session start, where a short summary file would do; a memory index with long entries; many skills that could be user-invoked only.
    - *Minimum Delegation:* rules that send routine work to agents or panels by default.
    - *Explicit Ownership:* agents that are really methods (should be skills), skills that act like people (should be agents or merged), two roles answering the same question, ownership rules copied into several files.
    - *Least Privilege:* agents with no `tools` field (they inherit everything), reviewer or advisory agents that can write, broad or one-off allow rules piling up in settings, secrets in tracked files, limits written only as prompt text with no hook or permission enforcing them.
@@ -48,8 +49,9 @@ Write for someone who is not a developer, in the language the user writes in. Us
 ```text
 CPOA AUDIT: <project name>
 
-Every session starts with ~<total> tokens of setup. After fixes: ~<n> (<percent> less).
-<one line naming the biggest source>
+Every session starts with ~<total> tokens (a token is about 4 characters of text) of setup.
+<only if present: plus up to ~<n> read because CLAUDE.md asks for it>
+After fixes: ~<n> (<percent> less, setup only)<only if present: + ~<n> still read by instruction>. Biggest source: <one short phrase>.
 
 THIS PROJECT
 1. <plain-language problem>  [Claude fixes | You fix | Your choice]
@@ -70,6 +72,8 @@ Token counts are estimates (characters / 4).
 Show at most three findings per section. Then end with a single question, not a command, for example:
 
 > The most important step is <first step>. It takes about <time>, and <I make the change | you get a short checklist>. Shall we start?
+
+The question is the last thing in the reply. Add nothing before the report and nothing after the question: no intro sentence, no extra explanation, no notes about what the script does not measure. Those belong in "show details".
 
 Keep the details (all findings, current → proposed, what you would not add, what the script does not measure) ready for when the user asks. Always say in one line that token counts are estimates.
 

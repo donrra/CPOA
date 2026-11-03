@@ -45,23 +45,25 @@ It takes a few minutes and only reads your files. You get a one-screen report. A
 ```text
 CPOA AUDIT: my-app
 
-Every session starts with ~21,900 tokens of setup. (A token is about 4 characters of text.) After fixes: ~13,200 (40% less).
-Most of it is CLAUDE.md, which holds procedures only some tasks need.
+Every session starts with ~19,200 tokens (a token is about 4 characters of text) of setup.
+Plus up to ~69,400 read because CLAUDE.md asks for the whole backlog at every start.
+After fixes: ~13,200 (31% less, setup only) + ~3,000 still read by instruction. Biggest source: the backlog.
 
 THIS PROJECT
 1. A production key is saved in a settings file tracked by Git  [Claude fixes + You fix]
-   Claude untracks the file; you replace the key in your host's dashboard.
-2. A 1,300-token sprint procedure sits in CLAUDE.md          [Claude fixes]
-   Move it to a workflow file that loads when needed.
+   .claude/settings.local.json - Claude untracks it; you replace the key in your host's dashboard.
+2. Every session reads the whole 1,340-line backlog             [Claude fixes]
+   CLAUDE.md:140 - read only the current sprint instead, saves up to ~66,000 tokens.
 
 YOUR MACHINE (affects all your projects, fixed once)
 1. 176 saved permission rules, 72 of them one-offs           [Claude fixes]
-   Includes read access to your whole disk without asking.
+   ~/.claude/settings.json - includes read access to your whole disk without asking.
 
 WORKING WELL
 Your read-only agents are blocked by a guard, not just asked to behave.
 
 Token counts are estimates (characters / 4).
+2 smaller findings and the full current → proposed plan: ask "show details".
 
 The most important step is the leaked key. I untrack the file, and you
 get a short checklist for replacing the key. Shall we start?
